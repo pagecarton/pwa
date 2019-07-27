@@ -119,7 +119,8 @@ class Application_PWA_Script extends PageCarton_Widget
 		//	var_export( $pages );
 			$cache = array_values( array_unique( array_merge( $jsToInclude, $cssToInclude, $pages ) ) );
 			
-			$widgets = is_array( Application_PWA_Settings::retrieve( 'widget_to_cache' ) ) ? : array();
+			$widgets = Application_PWA_Settings::retrieve( 'widget_to_cache' );
+			$widgets = $widgets ? $widgets : array();
 			$widgets += array( 'Application_PWA_Manifest' );
 			$widgetsText = trim( implode( '|\\/', $widgets ), '\\/|' );
 			$widgetsText = $widgetsText ? '|\\/' . $widgetsText : null;
