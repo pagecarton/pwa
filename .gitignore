@@ -1,2 +1,5 @@
 application/databases/PageCarton/Cron/Run/table.xml
 .DS_Store
+application/databases/Application/settings.xml
+application/databases/Application/PWA/Push/subscription.xml
+application/databases/Ayoola/Object/pagewidget.xml

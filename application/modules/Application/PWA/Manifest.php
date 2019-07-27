@@ -49,7 +49,12 @@ class Application_PWA_Manifest extends PageCarton_Widget
 			$icons[] = '/img/logo.png';
 			$settings['start_url'] = '' . Ayoola_Application::getUrlPrefix() . '/';
 			$settings['background_color'] = $settings['background_color'] ? : Ayoola_Page_Settings::retrieve( 'background_color' );
+			$settings['background_color'] = $settings['background_color'] ? : '#000000';
 			$settings['theme_color'] = $settings['theme_color'] ? : Ayoola_Page_Settings::retrieve( 'background_color' );
+			$settings['theme_color'] = $settings['theme_color'] ? : '#000000';
+			$settings['name'] = $settings['name'] ? : Ayoola_Application::getDomainName();
+			$settings['short_name'] = $settings['short_name'] ? : Ayoola_Application::getDomainName();
+			$settings['display'] = 'minimal-ui';
 			$iconsInfo = array();
 			$requiredImgSizes = array(
 				'72x72' ,
@@ -108,19 +113,12 @@ class Application_PWA_Manifest extends PageCarton_Widget
 			header( 'Content-Type: application/json' );
 			echo $json;
 			exit();
-        //     $this->setViewContent( self::__( '<h1>Hello PageCarton Widget</h1>' ) ); 
-        //     $this->setViewContent( self::__( '<p>Customize this widget (' . __CLASS__ . ') by editing this file below:</p>' ) ); 
-        //     $this->setViewContent( self::__( '<p style="font-size:smaller;">' . __FILE__ . '</p>' ) ); 
-
-             // end of widget process
-
              // end of widget process
           
 		}  
 		catch( Exception $e )
         { 
-            //  Alert! Clear the all other content and display whats below.
-        //    $this->setViewContent( self::__( '<p class="badnews">' . $e->getMessage() . '</p>' ) ); 
+            exit();
             $this->setViewContent( self::__( '<p class="badnews">Theres an error in the code</p>' ) ); 
             return false; 
         }

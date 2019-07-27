@@ -17,10 +17,8 @@
  */
 
 
-class Application_PWA_Settings extends PageCarton_Settings
+class Application_PWA_Error extends PageCarton_Settings
 {
-
-
 	
     /**
      * creates the form for creating and editing
