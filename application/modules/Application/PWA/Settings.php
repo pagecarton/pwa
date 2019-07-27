@@ -75,6 +75,9 @@ class Application_PWA_Settings extends PageCarton_Settings
 
 		$fieldset->addElement( array( 'name' => 'pages_to_cache', 'label' => 'Pages To Make Available Offline', 'value' => @$settings['pages_to_cache'], 'multiple' => 'multiple', 'type' => 'SelectMultiple' ), Ayoola_Page::getAll() );
 
+        //  Static pages
+		$fieldset->addElement( array( 'name' => 'static_pages_to_cache', 'label' => 'Static Pages', 'value' => @$settings['static_pages_to_cache'], 'multiple' => 'multiple', 'type' => 'SelectMultiple' ), Ayoola_Page::getAll() );
+
 		$fieldset->addElement( array( 'name' => 'widget_to_cache', 'label' => 'Widgets To Make Available Offline', 'value' => @$settings['widget_to_cache'], 'multiple' => 'multiple', 'type' => 'SelectMultiple' ), Ayoola_Object_Embed::getWidgets() );
 
 		

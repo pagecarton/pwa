@@ -7,7 +7,6 @@ function getResourceType( request )
 {
     var acceptHeader = request.headers.get('Accept');
     var resourceType = 'static';
-    var cacheKey;
 
     if (acceptHeader.indexOf('text/html') !== -1) {
         resourceType = 'content';
@@ -73,6 +72,7 @@ function addToCache(cacheKey, request, response) {
             cache.put(request, copy);
         });
     }
+//    console.log( cacheKey, );
     return response;
 }
 
@@ -97,13 +97,13 @@ function offlineResponse(resourceType, opts) {
 }
 
 function serverErrorResponse(resourceType, opts) {
-    console.log( 'Getting ' + resourceType + ' for ' );
+ //   console.log( 'Getting ' + resourceType + ' for ' );
     if (resourceType === 'image') {
         return new Response(opts.offlineImage,
             { headers: { 'Content-Type': 'image/svg+xml' } }
         );
     } else if (resourceType === 'content') {
-        console.log( opts.serverErrorPage );
+      //  console.log( opts.serverErrorPage );
         return caches.match(opts.serverErrorPage);
     }
     return undefined;
@@ -152,10 +152,10 @@ async function fetchIt( options )
         }
         // check if the response is valid since fetch doesn’t throw if the server
         // gives back a non 200-299 status code
-        console.log( 'should we accept ' + response.url );
+    //    console.log( 'should we accept ' + response.url );
         if( shouldAcceptResponse( response ) ) 
         {
-            console.log( response );
+    //        console.log( response );
             return response;
         }
         else
@@ -163,7 +163,7 @@ async function fetchIt( options )
         //    console.log( 'Not accepting error data from ' + response.url );
             if( serverError( response ) )
             {
-                console.log( 'Server error ' + response.url );
+            //    console.log( 'Server error ' + response.url );
                 var resourceType = getResourceType( options.request );
                 return serverErrorResponse( resourceType, options.opts )
             }
@@ -181,7 +181,7 @@ self.addEventListener('notificationclose', function(e) {
     var notification = e.notification;
     var primaryKey = notification.data.primaryKey;
   
-    console.log('Closed notification: ' + primaryKey);
+ //   console.log('Closed notification: ' + primaryKey);
   });
 
 self.addEventListener('notificationclick', function(e) {
@@ -204,6 +204,17 @@ self.addEventListener('push', function(e) {
   });
 
 self.addEventListener('fetch', event => {
+
+    function isStaticPage(event, opts) {
+        var request = event.request;
+        var url = new URL(request.url);
+        var criteria = {
+            matchesPathPattern: ( (opts.staticPages.indexOf(url.pathname) !== -1) ),
+        };
+        var failingCriteria = Object.keys(criteria)
+            .filter(criteriaKey => !criteria[criteriaKey]);
+        return !failingCriteria.length;
+    }
 
     function shouldHandleFetch(event, opts) {
         var request = event.request;
@@ -231,15 +242,26 @@ self.addEventListener('fetch', event => {
         }
 
         cacheKey = cacheName(resourceType, opts);
-        if (resourceType === 'content') {
-            event.respondWith(
+        if( resourceType === 'content' && isStaticPage( event, opts ) ) 
+        {
+            //  cache first for static content
+            event.respondWith(fromCache(event.request, cacheKey));
+            event.waitUntil(update(event.request, cacheKey));
 
+
+        //    event.waitUntil( addToCache( cacheKey, request, fetchIt( { "request": request, "opts": opts } ) ) );
+        } 
+        else if (resourceType === 'content') 
+        {
+            event.respondWith(
                 fetchIt( { "request": request, "opts": opts } )
                     .then(response => addToCache(cacheKey, request, response))
                     .catch(() => fetchFromCache(event))
                     .catch(() => offlineResponse(resourceType, opts))
             );
-        } else {
+        } 
+        else 
+        {
             event.respondWith(
                 fetchFromCache(event)
                     .catch(() => fetchIt( { "request": request, "opts": opts } ) )
@@ -248,7 +270,8 @@ self.addEventListener('fetch', event => {
             );
         }
     }
-    function interfereInFetch(event, opts) {
+    function interfereInFetch(event, opts) 
+    {
         var request = event.request;
         var resourceType = getResourceType( request );
 
@@ -257,10 +280,26 @@ self.addEventListener('fetch', event => {
                 .catch(() => offlineResponse(resourceType, opts))
         );
     }
-    if (shouldHandleFetch(event, config)) {
+    if( shouldHandleFetch(event, config ) ) 
+    {
         onFetch(event, config);
     }
-    else {
+    else 
+    {
         interfereInFetch(event, config);
     }
 });
+function update(request, cacheKey ) {
+    return caches.open( cacheKey ).then(function (cache) { 
+      return fetch(request).then(function (response) {
+        return cache.put(request, response);
+      });
+    });
+  }
+  function fromCache(request, cacheKey) {
+    return caches.open(cacheKey).then(function (cache) {
+      return cache.match(request).then(function (matching) {
+        return matching || Promise.reject('no-match');
+      });
+    });
+  }

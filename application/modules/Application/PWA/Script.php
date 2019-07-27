@@ -97,9 +97,25 @@ class Application_PWA_Script extends PageCarton_Widget
 				}
 				$pages[$key] = Ayoola_Application::getUrlPrefix() . $each;
 			}
-			$pages = array_values( $pages );
+            $pages = array_values( $pages );
+            
+			//	pages
+			$static = Application_PWA_Settings::retrieve( 'static_pages_to_cache' ) ? : array();
+		//	unset( $pages['/404'] );
+			foreach( $static as $key => $each )
+			{
+				if( ! $pageInfo = Ayoola_Page::getInfo( $each ) OR ( ! empty( $pageInfo['auth_level'] ) && ! self::hasPriviledge( $pageInfo['auth_level'] ) ) )
+				{
+					unset( $static[$key] );
+				//	var_export( $each );
+					continue;
+				}
+				$static[$key] = Ayoola_Application::getUrlPrefix() . $each;
+			}
+			$static = array_values( $static );
 			
 			$defaultPages = array_values( array_unique( array( Ayoola_Application::getUrlPrefix() . '/', $scope, Ayoola_Application::getUrlPrefix() . '/offline', Ayoola_Application::getUrlPrefix() . '/500' ) ) );  
+			$static = array_values( $static );  
 		//	var_export( $pages );
 			$cache = array_values( array_unique( array_merge( $jsToInclude, $cssToInclude, $pages ) ) );
 			
@@ -122,6 +138,7 @@ class Application_PWA_Script extends PageCarton_Widget
 					  version: \'achilles-y\',
 					  staticCacheItems: ' . json_encode( $defaultPages ) .  ',
 					  pagesToCache: ' . json_encode( $cache ) .  ',
+					  staticPages: ' . json_encode( $static ) .  ',
 					  cachePathPattern: /((\/Application_Javascript)|(\/layout\/)|(\/css)|(\/fonts\/)|(\/img\/)|(\.eot$)|(\.ttf$)|(\.woff$)|(\.woff2$)|(\.svg$)|(\.html$)' . $widgetsText .  ')/,
 					  offlineImage: \'<svg role="img" aria-labelledby="offline-title"\'
 						+ \' viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">\'
