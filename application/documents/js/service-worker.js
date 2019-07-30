@@ -167,13 +167,13 @@ async function fetchIt( options )
                 var resourceType = getResourceType( options.request );
                 return serverErrorResponse( resourceType, options.opts )
             }
-            return response;
+            return serverErrorResponse( resourceType, options.opts )
             
         }
     } 
     catch 
     {
-        return response;
+        return serverErrorResponse( resourceType, options.opts )
         // catch network errors
     }
 }
@@ -245,7 +245,21 @@ self.addEventListener('fetch', event => {
         if( resourceType === 'content' && isStaticPage( event, opts ) ) 
         {
             //  cache first for static content
-            event.respondWith(fromCache(event.request, cacheKey));
+            try
+            {
+                event.respondWith(
+                    fromCache(event.request, cacheKey)
+                    .catch(() => fetchIt( { "request": request, "opts": opts } ) )
+                    .then(response => addToCache(cacheKey, request, response))
+                    .catch(() => offlineResponse(resourceType, opts))
+                    
+                    );
+            }
+            catch
+            {
+                fetchIt( { "request": request, "opts": opts } )
+                .catch(() => offlineResponse(resourceType, opts))
+            }
             event.waitUntil(update(event.request, cacheKey));
 
 

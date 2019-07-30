@@ -28,7 +28,7 @@ var runPWA = function ( config ) {
         addBtn = document.querySelector('.pc-pwa-add-button');
     }
     else {
-        aContainer.setAttribute('style', 'position:fixed; left:0; right:0; top:0; background:#333; text-align:center;padding:3em;z-index:100000;');
+        aContainer.setAttribute('style', 'position:fixed; left:0; right:0; top:0; background:#333; text-align:center;padding:3em;z-index:100000; opacity: 0.9;');
         aContainer.setAttribute('class', '');
 
         title = document.createElement('p');
